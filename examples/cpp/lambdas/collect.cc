@@ -1,9 +1,11 @@
 #include <iostream>
 #include <vector>
+#include <functional>
 
 using namespace std;
 
-vector<int> collect(vector<int> in, int (*op) (int)) {
+// vector<int> collect(vector<int> in, int (*op) (int)) {
+vector<int> collect(vector<int> in, const function<int(int)> &op) {
   vector<int> out = {};
 
   for (auto& el : in) {
@@ -18,9 +20,10 @@ int main()   {
 
   int scaleBy = 2;
 
-  // vector<int> doubled = collect(primes, [scaleBy](int i) {
-  vector<int> doubled = collect(primes, [](int i) {
-    return i * 2;
+  vector<int> doubled = collect(primes, [scaleBy](int i) {
+  // vector<int> doubled = collect(primes, [](int i) {
+    // return i * 2;
+    return i * scaleBy;
   });
 
   for (const int& el: doubled) {
