@@ -111,6 +111,11 @@ class: center, middle
 ---
 class: center, middle
 
+![OSI Protocols](assets/images/osi-model-with-protocols.jpg)
+
+---
+class: center, middle
+
 #### TCP vs UDP, ...
 
 ---
