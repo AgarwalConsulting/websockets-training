@@ -788,9 +788,7 @@ class: center, middle
 ---
 class: center, middle
 
-#### Connecting using simple browser JavaScript code
-
-.content-credits[https://github.com/AgarwalConsulting/websockets-training/blob/master/examples/browser_js/connect.js]
+#### Connecting using [simple browser JavaScript code](https://github.com/AgarwalConsulting/websockets-training/blob/master/examples/browser_js/connect.js)
 
 ---
 class: center, middle
