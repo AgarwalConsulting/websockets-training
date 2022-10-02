@@ -37,3 +37,11 @@ export CPLUS_INCLUDE_PATH="$HOME/vcpkg/installed/arm64-osx/include:$CPLUS_INCLUD
 export Drogon_DIR="$HOME/vcpkg/installed/arm64-osx/share/drogon"
 for d in $HOME/vcpkg/installed/arm64-osx/tools/*; do PATH="$d:$PATH"; done
 ```
+
+---
+
+## Test Setup
+
+```bash
+drogon_ctl --version
+```
