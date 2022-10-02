@@ -795,9 +795,7 @@ class: center, middle
 ---
 class: center, middle
 
-*Exercise*: Notify connected clients about a newly created employee
-
-.content-credits[https://github.com/AgarwalConsulting/websockets-training/blob/master/challenges/notfiy-new-employees.md]
+*Exercise*: Notify connected clients about a [newly created employee](https://github.com/AgarwalConsulting/websockets-training/blob/master/challenges/notfiy-new-employees.md)
 
 ---
 class: center, middle
