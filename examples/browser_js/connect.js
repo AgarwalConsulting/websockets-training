@@ -3,6 +3,7 @@
 // let token = "{someToken}";
 
 let url = `ws://localhost:3000/echo`;
+// let url = `ws://localhost:3000/v1/subscribe/`;
 
 let webSocket = new WebSocket(url);
 

@@ -259,6 +259,29 @@ The biggest difference is that, unlike websockets, HTTP/2 defines its own multip
 ---
 class: center, middle
 
+## When **NOT** to use WebSockets
+
+---
+
+You might be using WebSockets incorrectly if:
+
+- The connection is used only for a very small number of events, or a very small amount of time, and the client does not need to quickly react to the events.
+
+- Your feature requires multiple WebSockets to be open to the same service at once.
+
+- Your feature opens a WebSocket, sends messages, then closes it—then repeats the process later.
+
+- You’re re-implementing a request/response pattern within the messaging layer.
+
+- The resulting design is cost-prohibitive.
+
+  - Ask yourself: Is a HTTP solution substantially less effort to design, implement, test, and operate?
+
+.content-credits[https://blogs.windows.com/windowsdeveloper/2016/03/14/when-to-use-a-http-call-instead-of-a-websocket-or-http-2-0/]
+
+---
+class: center, middle
+
 ## Enter the *Drogon*
 
 ---
@@ -327,7 +350,7 @@ class: center, middle
 ---
 class: center, middle
 
-**Demo**: Building a simple server with Drogon
+*Demo*: Building a simple server with Drogon
 
 ---
 class: center, middle
@@ -397,12 +420,12 @@ class: center, middle
 ---
 class: center, middle
 
-*Code Walkthrough*: An employee management server
+*Code Walkthrough*: An [employee management server](https://github.com/AgarwalConsulting/websockets-training/blob/master/notes/emp_server.md)
 
 ---
 class: center, middle
 
-## C++ 14/17 Refresher (Optional)
+## C++ 14/17/20 Refresher (Optional)
 
 ---
 
@@ -423,12 +446,7 @@ class: center, middle
 ---
 class: center, middle
 
-## Understanding WebSockets
-
----
-class: center, middle
-
-### [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)
+## Understanding WebSockets - A close look at [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)
 
 .content-credits[https://datatracker.ietf.org/doc/html/rfc6455]
 
@@ -440,7 +458,17 @@ class: center, middle
 ---
 class: center, middle
 
+### WebSocket Lifecycle
+
+---
+class: center, middle
+
 *The protocol consists of an opening handshake followed by basic message framing, layered over TCP.*
+
+---
+class: center, middle
+
+#### Opening Handshake
 
 ---
 
@@ -470,15 +498,339 @@ The handshake from the server looks as follows:
 ---
 class: center, middle
 
+*The opening handshake is intended to be compatible with HTTP-based server-side software and intermediaries, so that a single port can be used by both HTTP clients talking to that server and WebSocket clients talking to that server.*
+
+---
+class: center, middle
+
+*Any status code other than 101 indicates that the WebSocket handshake has not completed and that the semantics of HTTP still apply.*
+
+---
+
+Typical options:
+
+- the subprotocol selector (|`Sec-WebSocket-Protocol`|)
+
+  - used to indicate what subprotocols (application-level protocols layered over the WebSocket Protocol) are acceptable to the client
+
+- list of extensions support by the client (|`Sec-WebSocket-Extensions`|),
+
+- The |`Origin`| header field [RFC6454](https://datatracker.ietf.org/doc/html/rfc6454) is used to protect against unauthorized cross-origin use of a WebSocket server by scripts using the WebSocket API in a web browser.
+
+- the |`Sec-WebSocket-Version`| header field, provides a way for a client to indicate the version of the WebSocket Protocol that it prefers
+
+---
+
+The |`Sec-WebSocket-Key`| header field in the client handshake:
+
+```
+  Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+```
+
+& the `Sec-WebSocket-Accept` header field in the server handshake:
+
+```
+  Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+```
+
+prevents an attacker from tricking a WebSocket server by sending it carefully crafted packets using `XMLHttpRequest` or a form submission.
+
+---
+class: center, middle
+
+the server has to take the value (as present in the header field, e.g., the [base64-encoded](https://datatracker.ietf.org/doc/html/rfc4648) version minus any leading and trailing whitespace) and concatenate this with the Globally Unique Identifier [(GUID)](https://datatracker.ietf.org/doc/html/rfc4122) "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" in string form, which is unlikely to be used by network endpoints that do not understand the WebSocket Protocol.
+
+A SHA-1 hash (160 bits), base64-encoded, of this concatenation is then returned in the server's handshake.
+
+---
+class: center, middle
+
 *Once the client and server have both sent their handshakes, and if the handshake was successful, then the data transfer part starts.*
 
 ---
 class: center, middle
 
-*clients and servers transfer data back and forth in conceptual units referred to in this specification as "messages"*
+#### Closing Handshake
+
+---
+class: center, middle
+
+*The closing handshake is far simpler than the opening handshake.*
+
+---
+class: center, middle
+
+*Either peer can send a control frame with data containing a specified control sequence to begin the closing handshake.*
+
+---
+class: center, middle
+
+*After sending a control frame indicating the connection should be closed, a peer does not send any further data; after receiving a control frame indicating the connection should be closed, a peer discards any further data received.*
+
+---
+class: center, middle
+
+*By sending a Close frame and waiting for a Close frame in response, certain cases are avoided where data may be unnecessarily lost.*
+
+---
+class: center, middle
+
+### Sending & receiving "messages"
+
+---
+class: center, middle
+
+*After a successful opening handshake, clients and servers transfer data back and forth in conceptual units referred to in this specification as "messages".*
+
+---
+class: center, middle
+
+*data is transmitted using a sequence of frames.*
+
+---
+class: center, middle
+
+### Base Framing Protocol
+
+![Framing](assets/images/framing-protocol.png)
+
+.image-credits[https://datatracker.ietf.org/doc/html/rfc6455#section-5.2]
+
+---
+class: center, middle
+
+```
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-------+-+-------------+-------------------------------+
+  |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+  |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
+  |N|V|V|V|       |S|             |   (if payload len==126/127)   |
+  | |1|2|3|       |K|             |                               |
+  +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+  |     Extended payload length continued, if payload len == 127  |
+  + - - - - - - - - - - - - - - - +-------------------------------+
+  |                               |Masking-key, if MASK set to 1  |
+  +-------------------------------+-------------------------------+
+  | Masking-key (continued)       |          Payload Data         |
+  +-------------------------------- - - - - - - - - - - - - - - - +
+  :                     Payload Data continued ...                :
+  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+  |                     Payload Data continued ...                |
+  +---------------------------------------------------------------+
+```
 
 ---
 
+- FIN:  1 bit
+
+  - Indicates that this is the final fragment in a message.  The first fragment MAY also be the final fragment.
+
+- RSV1, RSV2, RSV3:  1 bit each
+
+  - MUST be 0 unless an extension is negotiated that defines meanings for non-zero values.  If a nonzero value is received and none of the negotiated extensions defines the meaning of such a nonzero value, the receiving endpoint MUST *Fail the WebSocket Connection*.
+
+- Mask:  1 bit
+
+  - Defines whether the "Payload data" is masked.  If set to 1, a masking key is present in masking-key, and this is used to unmask the "Payload data" as per Section 5.3.  All frames sent from client to server have this bit set to 1.
+
+- Payload length:  7 bits, 7+16 bits, or 7+64 bits
+
+  - The length of the "Payload data", in bytes: if 0-125, that is the payload length.  If 126, the following 2 bytes interpreted as a 16-bit unsigned integer are the payload length.  If 127, the following 8 bytes interpreted as a 64-bit unsigned integer (the most significant bit MUST be 0) are the payload length.
+
+---
+
+- Masking-key:  0 or 4 bytes
+
+  - All frames sent from the client to the server are masked by a 32-bit value that is contained within the frame.  This field is present if the mask bit is set to 1 and is absent if the mask bit is set to 0.
+
+- Payload data:  (x+y) bytes
+
+  - The "Payload data" is defined as "Extension data" concatenated with "Application data"
+
+- Extension data:  x bytes
+
+  - The "Extension data" is 0 bytes unless an extension has been negotiated.  Any extension MUST specify the length of the "Extension data", or how that length may be calculated, and how the extension use MUST be negotiated during the opening handshake. If present, the "Extension data" is included in the total payload length.
+
+- Application data:  y bytes
+
+  - Arbitrary "Application data", taking up the remainder of the frame after any "Extension data".  The length of the "Application data" is equal to the payload length minus the length of the "Extension data".
+
+---
+
+- Opcode:  4 bits
+
+  - Defines the interpretation of the "Payload data". If an unknown opcode is received, the receiving endpoint MUST *Fail the WebSocket Connection*.
+
+    - `%x0` denotes a continuation frame
+
+    - `%x1` denotes a text frame
+
+    - `%x2` denotes a binary frame
+
+    - `%x3-7` are reserved for further non-control frames
+
+    - `%x8` denotes a connection close
+
+    - `%x9` denotes a ping
+
+    - `%xA` denotes a pong
+
+    - `%xB-F` are reserved for further control frames
+
+---
+class: center, middle
+
+#### Control Frames
+
+---
+
+##### Close Frame
+
+- contains an opcode of `0x8`
+
+- The application MUST NOT send any more data frames after sending a Close frame.
+
+- If an endpoint receives a Close frame and did not previously send a Close frame, the endpoint MUST send a Close frame in response.
+
+- After both sending and receiving a Close message, an endpoint considers the WebSocket connection closed and MUST close the underlying TCP connection.
+
+---
+
+##### Ping
+
+- contains an opcode of `0x9`
+
+- Upon receipt of a Ping frame, an endpoint MUST send a Pong frame in response, unless it already received a Close frame.
+
+##### Pong
+
+- contains an opcode of `0xA`
+
+- A Pong frame sent in response to a Ping frame must have identical "Application data" as found in the message body of the Ping frame being replied to.
+
+---
+class: center, middle
+
+*A Ping frame may serve either as a keepalive or as a means to verify that the remote endpoint is still responsive.*
+
+---
+class: center, middle
+
+#### Data Frames
+
+---
+class: center, middle
+
+*Data frames (e.g., non-control frames) are identified by opcodes where the most significant bit of the opcode is `0`.*
+
+---
+
+- Currently defined opcodes for data frames include 0x1 (Text), 0x2 (Binary).
+
+- Opcodes `0x3`-`0x7` are reserved for further non-control frames yet to be defined.
+
+---
+class: center, middle
+
+### Closing the connection
+
+---
+class: center, middle
+
+To *Close the WebSocket Connection*, an endpoint closes the underlying TCP connection.
+
+---
+class: center, middle
+
+An endpoint SHOULD use a method that cleanly closes the TCP connection, as well as the TLS session, if applicable, discarding any trailing bytes that may have been received.
+
+---
+class: center, middle
+
+### WebSocket URIs
+
+---
+class: center, middle
+
+```
+ws-URI = "ws:" "//" host [ ":" port ] path [ "?" query ]
+wss-URI = "wss:" "//" host [ ":" port ] path [ "?" query ]
+```
+
+---
+class: center, middle
+
+## back to coding...
+
+---
+class: center, middle
+
+```bash
+drogon_ctl create controller -w <YourWSCtrl>
+```
+
+---
+class: center, middle
+
+### Drogon's `WebSocketController`
+
+.content-credits[https://drogon.docsforge.com/master/controller-introduction/controller-websocketcontroller/]
+
+---
+
+- handleNewConnection
+
+- handleNewMessage
+
+- handleConnectionClosed
+
+---
+class: center, middle
+
+#### Connecting using simple browser JavaScript code
+
+.content-credits[https://github.com/AgarwalConsulting/websockets-training/blob/master/examples/browser_js/connect.js]
+
+---
+class: center, middle
+
+*Exercise*: Notify connected clients about a newly created employee
+
+.content-credits[https://github.com/AgarwalConsulting/websockets-training/blob/master/challenges/notfiy-new-employees.md]
+
+---
+class: center, middle
+
+## Filters
+
+.content-credits[https://drogon.docsforge.com/master/filter/]
+
+---
+class: center, middle
+
+*Demo*: Adding authentication to our ws server
+
+---
+class: center, middle
+
+## Enabling `wss` over `ws`
+
+---
+class: center, middle
+
+*Demo*: Configuring SSL using Drogon
+
+.content-credits[https://drogon.docsforge.com/master/configuration-file/#configuration-file-details]
+
+---
+class: center, middle
+
+## Scalability of WebSockets
+
+.content-credits[https://stackoverflow.com/questions/47268038/websockets-and-scalability]
+
+---
 class: center, middle
 
 Code

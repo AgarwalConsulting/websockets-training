@@ -1,0 +1,10 @@
+{
+  "ssl": {
+    "cert": "cert.pem",
+    "key": "key.pem",
+    "conf": [
+      ["Options", "Compression"],
+      ["min_protocol", "TLSv1.2"]
+    ]
+  }
+}

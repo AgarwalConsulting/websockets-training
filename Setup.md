@@ -44,4 +44,8 @@ for d in $HOME/vcpkg/installed/arm64-osx/tools/*; do PATH="$d:$PATH"; done
 
 ```bash
 drogon_ctl --version
+
+# (or)
+
+dg_ctl --version
 ```
