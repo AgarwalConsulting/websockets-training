@@ -790,6 +790,8 @@ class: center, middle
 
 #### Connecting using [simple browser JavaScript code](https://github.com/AgarwalConsulting/websockets-training/blob/master/examples/browser_js/connect.js)
 
+.content-credits[https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API]
+
 ---
 class: center, middle
 
