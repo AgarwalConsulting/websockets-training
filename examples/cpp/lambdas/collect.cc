@@ -15,6 +15,11 @@ vector<int> collect(vector<int> in, const function<int(int)> &op) {
   return out;
 }
 
+// int doublee(int x)
+// {
+//   return x*2;
+// }
+
 int main()   {
   vector<int> primes = {1, 2, 3, 5, 7, 11};
 
@@ -25,6 +30,8 @@ int main()   {
     // return i * 2;
     return i * scaleBy;
   });
+
+  //vector<int> doubled = collect(primes, &doublee);
 
   for (const int& el: doubled) {
   // for (auto& el: doubled) {
