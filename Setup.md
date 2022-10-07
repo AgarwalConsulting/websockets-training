@@ -40,6 +40,17 @@ for d in $HOME/vcpkg/installed/arm64-osx/tools/*; do PATH="$d:$PATH"; done
 
 ---
 
+## OS Specific Issues
+
+### Ubuntu
+
+```bash
+sudo apt install libc-ares-dev libbrotli-dev
+sudo ln -s /usr/include /include
+```
+
+---
+
 ## Test Setup
 
 ```bash
