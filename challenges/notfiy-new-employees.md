@@ -13,7 +13,9 @@
 - When a new employee is created via a POST request:
 
 ```bash
-curl -X POST http://localhost:3000/v1/employees/ --data '{"name": "Gaurav", "department": "LnD", "projectID": "1001"}'
+curl --location --request POST 'http://localhost:3000/v1/employees/' \
+--header 'Content-Type: application/json' \
+--data-raw '{"department": "Cloud", "name": "Scott", "projectID": "1002"}'
 ```
 
 make sure you notify the connected clients from your `WebSocketController`
